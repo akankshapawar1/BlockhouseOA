@@ -1,5 +1,7 @@
 import requests
 from datetime import datetime, timedelta
+
+from .backtesting import backtest_moving_average_strategy
 from .models import StockPrice
 from django.http import JsonResponse
 import os
@@ -43,3 +45,19 @@ def fetch_stock_view(request, symbol):
     if 'error' in result:
         return JsonResponse({'status': 'Error', 'message': result['error']}, status=400)
     return JsonResponse({'status': 'Data fetched successfully'})
+
+def backtest_view(request):
+    # Get parameters from the request (initial investment, symbol, etc.)
+    symbol = request.GET.get('symbol', 'AAPL')  # Default to AAPL
+    initial_investment = float(request.GET.get('initial_investment', 10000))
+    short_window = int(request.GET.get('short_window', 50))
+    long_window = int(request.GET.get('long_window', 200))
+    
+    # Run the backtest strategy
+    result = backtest_moving_average_strategy(symbol, initial_investment, short_window, long_window)
+    
+    if 'error' in result:
+        return JsonResponse({'status': 'Error', 'message': result['error']}, status=400)
+    
+    # Return the backtest result
+    return JsonResponse({'status': 'Success', 'data': result})
