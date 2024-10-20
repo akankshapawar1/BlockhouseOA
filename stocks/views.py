@@ -74,3 +74,25 @@ def predict_view(request):
 
     # Return the serialized data
     return JsonResponse({'status': 'Success', 'data': result})
+
+from django.http import JsonResponse, FileResponse
+from .utils import generate_pdf_report, compute_metrics
+
+def report_view(request, symbol):
+    # Check the format requested: 'json' or 'pdf'
+    report_format = request.GET.get('format', 'pdf')
+
+    if report_format == 'pdf':
+        # Generate PDF report
+        buffer = generate_pdf_report(symbol)
+        return FileResponse(buffer, as_attachment=True, filename=f"{symbol}_report.pdf")
+
+    elif report_format == 'json':
+        # Generate and return key metrics in JSON format
+        metrics = compute_metrics(symbol)
+        return JsonResponse({
+            'status': 'Success',
+            'metrics': metrics
+        })
+
+    return JsonResponse({'status': 'Error', 'message': 'Invalid format specified'}, status=400)

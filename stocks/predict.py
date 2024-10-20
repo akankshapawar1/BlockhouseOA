@@ -35,13 +35,44 @@ def predict_stock_prices(symbol, days=30):
     predictions = []
     for i, predicted_price in enumerate(predicted_prices):
         future_date = last_day + timedelta(days=(i + 1))
-        prediction = {
+        
+        # Save the prediction to the StockPrediction model
+        prediction = StockPrediction.objects.create(
+            symbol=symbol,
+            date=future_date,
+            predicted_price=Decimal(predicted_price)  # Convert to Decimal for storing in the model
+        )
+        
+        # Add the prediction to the list for the JSON response
+        predictions.append({
             'symbol': symbol,
             'date': future_date.strftime('%Y-%m-%d'),
             'predicted_price': float(predicted_price)  # Convert Decimal or NumPy types to float
-        }
-        predictions.append(prediction)
-    
-    # I thinkk I should add date in actual stock data column so we can comapre it later
+        })
 
     return predictions  # Return a list of dicts, which is JSON serializable
+
+def compute_metrics(symbol):
+    predictions = StockPrediction.objects.filter(symbol=symbol).order_by('date')
+
+    total_predictions = predictions.count()
+    total_error = Decimal(0)
+    correct_predictions = 0
+
+    for prediction in predictions:
+        if prediction.actual_price is not None:
+            error = abs(prediction.predicted_price - prediction.actual_price)
+            total_error += error
+            # Consider a prediction correct if it's within $5 of the actual price
+            if error <= Decimal('5.00'):
+                correct_predictions += 1
+
+    # Calculate metrics
+    mean_absolute_error = total_error / total_predictions if total_predictions > 0 else 0
+    accuracy = (correct_predictions / total_predictions * 100) if total_predictions > 0 else 0
+
+    return {
+        'total_predictions': total_predictions,
+        'mean_absolute_error': mean_absolute_error,
+        'accuracy': accuracy
+    }

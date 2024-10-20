@@ -14,10 +14,13 @@ class StockPrice(models.Model):
     def __str__(self):
         return f"{self.symbol}"
     
+# add a column to store actual prices in future.
+# how?
 class StockPrediction(models.Model):
     symbol = models.CharField(max_length=10)
     date = models.DateField()
     predicted_price = models.DecimalField(max_digits=10, decimal_places=2)
+    actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # New field for actual price
 
     def __str__(self):
         return f"Prediction for {self.symbol} on {self.date}: {self.predicted_price}"

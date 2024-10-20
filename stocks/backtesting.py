@@ -65,8 +65,6 @@ def backtest_moving_average_strategy(symbol, initial_investment, short_window=50
 
     # Return the backtesting results
     return {
-        'initial_investment': initial_investment,
-        'final_portfolio_value': final_portfolio_value,
         'total_return': total_return,
         'total_trades': total_trades,
         'max_drawdown': max_drawdown,
