@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime, timedelta
-
+from .predict import predict_stock_prices
 from .backtesting import backtest_moving_average_strategy
 from .models import StockPrice
 from django.http import JsonResponse
@@ -60,4 +60,17 @@ def backtest_view(request):
         return JsonResponse({'status': 'Error', 'message': result['error']}, status=400)
     
     # Return the backtest result
+    return JsonResponse({'status': 'Success', 'data': result})
+
+def predict_view(request):
+    symbol = request.GET.get('symbol', 'AAPL')  # Default to AAPL
+    days = int(request.GET.get('days', 30))  # Default to predicting 30 days
+
+    # Call the function that handles prediction
+    result = predict_stock_prices(symbol, days)
+
+    if isinstance(result, dict) and 'error' in result:
+        return JsonResponse({'status': 'Error', 'message': result['error']}, status=400)
+
+    # Return the serialized data
     return JsonResponse({'status': 'Success', 'data': result})

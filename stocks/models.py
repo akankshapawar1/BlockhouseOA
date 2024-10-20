@@ -13,3 +13,11 @@ class StockPrice(models.Model):
     # why this?
     def __str__(self):
         return f"{self.symbol}"
+    
+class StockPrediction(models.Model):
+    symbol = models.CharField(max_length=10)
+    date = models.DateField()
+    predicted_price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Prediction for {self.symbol} on {self.date}: {self.predicted_price}"
