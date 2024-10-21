@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from decouple import config
 
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
@@ -80,13 +81,13 @@ WSGI_APPLICATION = "BlockhouseOA.wsgi.application"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": 'db_stocks',
-        'USER': 'akanksha',
-        'PASSWORD': 'test',
-        'HOST': 'localhost',
-        'PORT': '5432',
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('POSTGRES_DB'),
+        'USER': config('POSTGRES_USER'),
+        'PASSWORD': config('POSTGRES_PASSWORD'),
+        'HOST': config('DB_HOST', default='localhost'),  # Load DB_HOST from .env
+        'PORT': config('DB_PORT', default='5432'),  # Load DB_PORT from .env
     }
 }
 
