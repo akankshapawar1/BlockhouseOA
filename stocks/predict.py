@@ -7,7 +7,6 @@ import pandas as pd
 from random import uniform
 from .models import StockPrice, StockPrediction
 
-# Load the pre-trained model
 def load_model():
     model_path = os.path.join(settings.BASE_DIR, 'stocks', 'linear_regression_model.pkl')
     with open(model_path, 'rb') as file:
@@ -15,10 +14,7 @@ def load_model():
     return model
 
 def predict_stock_prices(symbol, days=30):
-    # Load the pre-trained model
     model = load_model()
-
-    # Fetch historical data for the given symbol
     stock_data = StockPrice.objects.filter(symbol=symbol).order_by('date').values('date', 'close_price')
 
     if not stock_data.exists():
@@ -28,9 +24,9 @@ def predict_stock_prices(symbol, days=30):
     df = pd.DataFrame(stock_data)
     df['date'] = pd.to_datetime(df['date'])
 
-    # Use the number of days as the input for prediction (simple linear regression on days)
-    last_day = df['date'].max()  # Get the last date from the historical data
-    X_future = [[i] for i in range(1, days + 1)]  # Future days
+    # Use the number of days as the input for prediction 
+    last_day = df['date'].max()  
+    X_future = [[i] for i in range(1, days + 1)]  
 
     # Predict future stock prices using the pre-trained model
     predicted_prices = model.predict(X_future)
@@ -40,16 +36,16 @@ def predict_stock_prices(symbol, days=30):
     for i, predicted_price in enumerate(predicted_prices):
         future_date = last_day + timedelta(days=(i + 1))
 
-        # Generate mock actual price (+/- 5% deviation from predicted price)
-        random_change = uniform(-0.05, 0.05)  # Random change between -5% and +5%
+        # Generate mock actual price (+/- 2% deviation from predicted price)
+        random_change = uniform(-0.02, 0.02)  
         actual_price = Decimal(predicted_price) * (1 + Decimal(random_change))
 
         # Create and save the StockPrediction entry with both predicted and actual prices
-        prediction = StockPrediction.objects.create(
+        StockPrediction.objects.create(
             symbol=symbol,
             date=future_date,
             predicted_price=Decimal(predicted_price),
-            actual_price=actual_price  # Save the generated actual price
+            actual_price=actual_price  
         )
 
         # Append the prediction to the list for returning
@@ -60,4 +56,4 @@ def predict_stock_prices(symbol, days=30):
             'actual_price': float(actual_price)
         })
 
-    return predictions  # Return the predictions with actual prices
+    return predictions  

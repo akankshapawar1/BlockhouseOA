@@ -20,9 +20,10 @@
     <p>Example: <code>GET /backtest/?symbol=AAPL&amp;initial_investment=10000&amp;short_window=50&amp;long_window=200</code></p>
 
     <h2>3. Get Stock Predictions</h2>
-    <p>Use the following endpoint to get stock price predictions:</p>
-    <pre>GET /predict/?symbol=&lt;symbol&gt;&amp;days=&lt;number_of_days&gt;</pre>
-    <p>Example: <code>GET /predict/?symbol=AAPL&amp;days=30</code></p>
+    <p>Use the following endpoint to get stock price predictions for the next 30 days:</p>
+    <pre>GET /predict/?symbol=&lt;symbol&gt;</pre>
+    <p>Example: <code>GET /predict/?symbol=AAPL</code></p>
+    <p>Note: This will always return predictions for the next 30 days.</p>
 
     <h2>4. Generate Report (PDF/JSON)</h2>
     <p>Use the following endpoint to generate a report in PDF or JSON format:</p>

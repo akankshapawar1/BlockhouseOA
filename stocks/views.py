@@ -83,7 +83,7 @@ def backtest_view(request):
 
 def predict_view(request):
     symbol = request.GET.get('symbol', 'AAPL')  
-    days = int(request.GET.get('days', 30))  
+    days = 30
 
     result = predict_stock_prices(symbol, days)
 
