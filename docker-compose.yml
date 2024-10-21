@@ -17,14 +17,8 @@ services:
       - .:/app
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=1
-      - API_KEY=${API_KEY}
-      - DB_NAME=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASS=${POSTGRES_PASSWORD}
-      - DB_HOST=${DB_HOST} 
-      - DB_PORT=${DB_PORT} 
+    env_file:
+      - .env 
     depends_on:
       - db
 
