@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Instructions</title>
+</head>
+<body>
+    <h1>Welcome to the Stock API Service</h1>
+    <p>Here are the available API endpoints:</p>
+    
+    <h2>1. Fetch Stock Data</h2>
+    <p>Use the following endpoint to fetch stock data for a given symbol:</p>
+    <pre>GET /fetch/&lt;symbol&gt;/</pre>
+    <p>Example: <code>GET /fetch/AAPL/</code></p>
+
+    <h2>2. Run Backtest</h2>
+    <p>Use the following endpoint to run a backtesting strategy:</p>
+    <pre>GET /backtest/?symbol=&lt;symbol&gt;&amp;initial_investment=&lt;amount&gt;&amp;short_window=&lt;short_window&gt;&amp;long_window=&lt;long_window&gt;</pre>
+    <p>Example: <code>GET /backtest/?symbol=AAPL&amp;initial_investment=10000&amp;short_window=50&amp;long_window=200</code></p>
+
+    <h2>3. Get Stock Predictions</h2>
+    <p>Use the following endpoint to get stock price predictions:</p>
+    <pre>GET /predict/?symbol=&lt;symbol&gt;&amp;days=&lt;number_of_days&gt;</pre>
+    <p>Example: <code>GET /predict/?symbol=AAPL&amp;days=30</code></p>
+
+    <h2>4. Generate Report (PDF/JSON)</h2>
+    <p>Use the following endpoint to generate a report in PDF or JSON format:</p>
+    <pre>GET /report/&lt;symbol&gt;/?format=&lt;pdf|json&gt;</pre>
+    <p>Example for PDF: <code>GET /report/AAPL/?format=pdf</code></p>
+    <p>Example for JSON: <code>GET /report/AAPL/?format=json</code></p>
+    
+</body>
+</html>

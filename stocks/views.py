@@ -1,3 +1,4 @@
+from django.shortcuts import render
 import requests
 from datetime import datetime, timedelta
 from .predict import predict_stock_prices
@@ -5,19 +6,37 @@ from .backtesting import backtest_moving_average_strategy
 from .models import StockPrice
 from django.http import JsonResponse
 import os
+from tenacity import retry, stop_after_attempt, wait_fixed
+
 API_KEY = os.getenv('API_KEY')
 
+def home_view(request):
+    return render(request, 'home.html')
+
+@retry(stop=stop_after_attempt(2), wait=wait_fixed(3))
 def fetch_stock_data(symbol):
-    url = f'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&outputsize=full&apikey={API_KEY}'
+    url = f'https://www.alphavantage.co/query'
+    
+    params = {
+        'function': 'TIME_SERIES_DAILY',
+        'symbol': symbol,
+        'outputsize': 'full',
+        'apikey': API_KEY
+    }
 
     try:
-        response = requests.get(url)
+        response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()  
+
+        if "Note" in response.json():
+            return {'error': 'API rate limit reached. Please try again later.'}
+
         data = response.json().get('Time Series (Daily)', {})
-        
+
         if not data:
             return {'error': 'No data found from Alpha Vantage API.'}
 
+        # Process and store data for the past 2 years
         two_years_ago = datetime.now() - timedelta(days=2*365)
 
         for date, values in data.items():
@@ -37,8 +56,11 @@ def fetch_stock_data(symbol):
                 )
         return {'status': 'Data fetched and stored successfully'}
 
+    except requests.exceptions.Timeout:
+        return {'error': 'The request timed out. Please try again later.'}
+
     except requests.exceptions.RequestException as e:
-        return {'error': str(e)}
+        return {'error': f'An error occurred: {str(e)}'}
 
 def fetch_stock_view(request, symbol):
     result = fetch_stock_data(symbol)
@@ -47,48 +69,40 @@ def fetch_stock_view(request, symbol):
     return JsonResponse({'status': 'Data fetched successfully'})
 
 def backtest_view(request):
-    # Get parameters from the request (initial investment, symbol, etc.)
     symbol = request.GET.get('symbol', 'AAPL')  # Default to AAPL
     initial_investment = float(request.GET.get('initial_investment', 10000))
     short_window = int(request.GET.get('short_window', 50))
     long_window = int(request.GET.get('long_window', 200))
     
-    # Run the backtest strategy
     result = backtest_moving_average_strategy(symbol, initial_investment, short_window, long_window)
     
     if 'error' in result:
         return JsonResponse({'status': 'Error', 'message': result['error']}, status=400)
     
-    # Return the backtest result
     return JsonResponse({'status': 'Success', 'data': result})
 
 def predict_view(request):
-    symbol = request.GET.get('symbol', 'AAPL')  # Default to AAPL
-    days = int(request.GET.get('days', 30))  # Default to predicting 30 days
+    symbol = request.GET.get('symbol', 'AAPL')  
+    days = int(request.GET.get('days', 30))  
 
-    # Call the function that handles prediction
     result = predict_stock_prices(symbol, days)
 
     if isinstance(result, dict) and 'error' in result:
         return JsonResponse({'status': 'Error', 'message': result['error']}, status=400)
 
-    # Return the serialized data
     return JsonResponse({'status': 'Success', 'data': result})
 
 from django.http import JsonResponse, FileResponse
 from .utils import generate_pdf_report, compute_metrics
 
 def report_view(request, symbol):
-    # Check the format requested: 'json' or 'pdf'
     report_format = request.GET.get('format', 'pdf')
 
     if report_format == 'pdf':
-        # Generate PDF report
         buffer = generate_pdf_report(symbol)
         return FileResponse(buffer, as_attachment=True, filename=f"{symbol}_report.pdf")
 
     elif report_format == 'json':
-        # Generate and return key metrics in JSON format
         metrics = compute_metrics(symbol)
         return JsonResponse({
             'status': 'Success',
