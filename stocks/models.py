@@ -24,5 +24,8 @@ class StockPrediction(models.Model):
     predicted_price = models.DecimalField(max_digits=10, decimal_places=2)
     actual_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  
 
+    class Meta:
+        unique_together = ['symbol', 'date']
+
     def __str__(self):
         return f"Prediction for {self.symbol} on {self.date}: {self.predicted_price}"
