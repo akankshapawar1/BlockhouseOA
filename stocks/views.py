@@ -3,10 +3,12 @@ import requests
 from datetime import datetime, timedelta
 from .predict import predict_stock_prices
 from .backtesting import backtest_moving_average_strategy
-from .models import StockPrice
+from .models import StockPrediction, StockPrice
 from django.http import JsonResponse
 import os
 from tenacity import retry, stop_after_attempt, wait_fixed
+from django.http import JsonResponse, FileResponse
+from .utils import generate_pdf_report, compute_metrics
 
 API_KEY = os.getenv('API_KEY')
 
@@ -92,21 +94,29 @@ def predict_view(request):
 
     return JsonResponse({'status': 'Success', 'data': result})
 
-from django.http import JsonResponse, FileResponse
-from .utils import generate_pdf_report, compute_metrics
-
 def report_view(request, symbol):
     report_format = request.GET.get('format', 'pdf')
+    backtesting_results = backtest_moving_average_strategy(symbol, initial_investment=10000, short_window=50, long_window=200)
+    predictions_exist = StockPrediction.objects.filter(symbol=symbol).exists()
 
     if report_format == 'pdf':
         buffer = generate_pdf_report(symbol)
         return FileResponse(buffer, as_attachment=True, filename=f"{symbol}_report.pdf")
 
     elif report_format == 'json':
-        metrics = compute_metrics(symbol)
-        return JsonResponse({
+        response_data = {
             'status': 'Success',
-            'metrics': metrics
-        })
+            'backtesting_results': {
+                'total_return': backtesting_results['total_return'],
+                'total_trades': backtesting_results['total_trades'],
+                'max_drawdown': backtesting_results['max_drawdown']
+            }
+        }
+        if predictions_exist:
+            metrics = compute_metrics(symbol)
+            response_data['prediction_results'] = metrics
+        else:
+            response_data['prediction_results'] = 'No predictions found for this symbol.'
+        return JsonResponse(response_data)
 
     return JsonResponse({'status': 'Error', 'message': 'Invalid format specified'}, status=400)
