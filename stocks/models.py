@@ -13,6 +13,7 @@ class StockPrice(models.Model):
         indexes = [
             models.Index(fields=['symbol', 'date']), 
         ]
+        unique_together = ['symbol', 'date']
 
     def __str__(self):
         return f"{self.symbol}"
