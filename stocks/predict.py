@@ -41,7 +41,7 @@ def predict_stock_prices(symbol, days=30):
         actual_price = Decimal(predicted_price) * (1 + Decimal(random_change))
 
         # Create and save the StockPrediction entry with both predicted and actual prices
-        StockPrediction.objects.create(
+        StockPrediction.objects.update_or_create(
             symbol=symbol,
             date=future_date,
             predicted_price=Decimal(predicted_price),
