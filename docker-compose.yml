@@ -1,8 +1,6 @@
-version: '3'
-
 services:
   db:
-    image: postgres:13
+    image: postgres:14
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
@@ -25,8 +23,8 @@ services:
       - DB_NAME=${POSTGRES_DB}
       - DB_USER=${POSTGRES_USER}
       - DB_PASS=${POSTGRES_PASSWORD}
-      - DB_HOST=${DB_HOST}  # Use the DB_HOST from .env
-      - DB_PORT=${DB_PORT}  # Use the DB_PORT from .env
+      - DB_HOST=${DB_HOST} 
+      - DB_PORT=${DB_PORT} 
     depends_on:
       - db
 
