@@ -28,6 +28,11 @@ jobs:
       - name: Run Django tests
         run: |
           source venv/bin/activate
+          export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          export DB_HOST=${{ secrets.DB_HOST }}
+          export DB_PORT=5432
           python manage.py test
 
       - name: Set up Docker
